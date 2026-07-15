@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KELVIN — Precision Heat, Reimagined</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   KELVIN — design tokens
+   Signature: the Heat Ring (device thermal indicator == AI mind)
+   Warm ember = active/heat  ·  cool mint = ready/cool
+   ============================================================ */
+:root{
+  --void:#0A0B0F;
+  --void-2:#0D0F15;
+  --carbon:#14161D;
+  --carbon-2:#1B1E27;
+  --line:rgba(199,205,214,.09);
+  --line-2:rgba(199,205,214,.16);
+
+  --titanium:#C7CDD6;
+  --ink-hi:#F4F6FA;
+  --ink-mid:#9AA3B2;
+  --ink-lo:#616A7A;
+
+  --ember-1:#FF6A3D;   /* coral */
+  --ember-2:#FFB454;   /* amber */
+  --ember-glow:rgba(255,120,70,.55);
+  --ice:#7CE7D8;       /* cool mint */
+  --ice-glow:rgba(124,231,216,.45);
+
+  --grad-heat:linear-gradient(135deg,var(--ember-2),var(--ember-1));
+  --grad-cool:linear-gradient(135deg,var(--ice),#6FB8FF);
+
+  --r-sm:10px; --r-md:16px; --r-lg:22px; --r-xl:30px;
+  --sp-1:6px; --sp-2:12px; --sp-3:20px; --sp-4:32px; --sp-5:52px; --sp-6:84px;
+
+  --shadow:0 24px 60px -20px rgba(0,0,0,.7);
+  --font-display:'Space Grotesk',system-ui,-apple-system,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'Space Mono','SF Mono',ui-monospace,monospace;
+
+  --dock-w:392px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  background:var(--void);
+  color:var(--ink-hi);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.55;
+  overflow-x:hidden;
+}
+/* ambient aurora */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(680px 480px at 78% 8%, rgba(255,120,70,.10), transparent 60%),
+    radial-gradient(720px 560px at 8% 88%, rgba(124,231,216,.07), transparent 62%),
+    radial-gradient(900px 700px at 50% 120%, rgba(111,184,255,.05), transparent 60%);
+}
+body::after{ /* fine grain */
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;
+  background-image:radial-gradient(rgba(255,255,255,.7) .5px,transparent .5px);
+  background-size:3px 3px;mix-blend-mode:overlay;
+}
+::selection{background:rgba(255,120,70,.28);color:#fff}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.mono{font-family:var(--font-mono)}
+.eyebrow{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--ice);opacity:.85;
+}
+
+/* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:1fr var(--dock-w);min-height:100vh}
+.canvas{position:relative;min-width:0}
+.dock-col{position:relative}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:var(--sp-4);
+  padding:18px clamp(20px,4vw,52px);
+  backdrop-filter:blur(18px);
+  background:linear-gradient(180deg,rgba(10,11,15,.82),rgba(10,11,15,.35));
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;letter-spacing:.02em}
+.brand .k-mark{
+  width:26px;height:26px;border-radius:8px;background:var(--grad-heat);
+  display:grid;place-items:center;font-size:15px;color:#1a0d06;font-weight:700;
+  box-shadow:0 0 18px var(--ember-glow);
+}
+.brand small{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.34em;color:var(--ink-lo);display:block;margin-top:-2px}
+
+.journeys{display:flex;gap:4px;margin-left:auto;background:var(--carbon);padding:4px;border-radius:999px;border:1px solid var(--line)}
+.journeys button{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  padding:8px 15px;border-radius:999px;color:var(--ink-mid);transition:.35s var(--ease);position:relative;
+}
+.journeys button .idx{opacity:.5;margin-right:6px}
+.journeys button.active{color:#160c05;background:var(--grad-heat);box-shadow:0 0 20px var(--ember-glow)}
+.journeys button:not(.active):hover{color:var(--ink-hi)}
+.topbar .age{font-family:var(--font-mono);font-size:10px;color:var(--ink-lo);letter-spacing:.1em;border:1px solid var(--line-2);padding:6px 10px;border-radius:8px}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{position:relative;padding:clamp(48px,7vw,96px) clamp(20px,4vw,52px) var(--sp-6);overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:var(--sp-5);align-items:center;max-width:1200px}
+.hero h1{
+  font-family:var(--font-display);font-weight:700;line-height:.98;letter-spacing:-.02em;
+  font-size:clamp(40px,6.2vw,78px);margin:18px 0 22px;
+}
+.hero h1 .warm{
+  background:linear-gradient(135deg,var(--ember-2),var(--ember-1) 60%,#ff8a8a);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p.lead{font-size:clamp(15px,1.5vw,18px);color:var(--ink-mid);max-width:44ch;margin-bottom:30px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.btn{
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  padding:14px 22px;border-radius:12px;transition:.3s var(--ease);display:inline-flex;align-items:center;gap:9px;
+}
+.btn-primary{background:var(--grad-heat);color:#160c05;font-weight:700;box-shadow:0 0 0 rgba(255,120,70,0)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 34px -8px var(--ember-glow)}
+.btn-ghost{border:1px solid var(--line-2);color:var(--ink-hi)}
+.btn-ghost:hover{border-color:var(--ice);color:var(--ice)}
+
+.hero-stats{display:flex;gap:var(--sp-4);margin-top:44px}
+.hero-stats .stat .n{font-family:var(--font-display);font-size:clamp(24px,3vw,34px);font-weight:600}
+.hero-stats .stat .n small{font-size:14px;color:var(--ember-2)}
+.hero-stats .stat .l{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-lo)}
+
+/* ---------- device render + heat ring ---------- */
+.device-stage{position:relative;display:grid;place-items:center;min-height:440px}
+.device-halo{position:absolute;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,120,70,.18),transparent 60%);filter:blur(10px);
+  animation:breathe 6s var(--ease) infinite}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.08);opacity:1}}
+
+.device{position:relative;width:150px;height:360px;transform:rotate(-14deg);animation:float 7s var(--ease) infinite}
+@keyframes float{0%,100%{transform:rotate(-14deg) translateY(0)}50%{transform:rotate(-14deg) translateY(-14px)}}
+.device .body{
+  position:absolute;inset:0;border-radius:44px;
+  background:linear-gradient(120deg,#2a2e39,#171a22 45%,#0f1117);
+  border:1px solid rgba(199,205,214,.22);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.14),inset 0 -30px 60px rgba(0,0,0,.6),var(--shadow);
+}
+.device .seam{position:absolute;left:14px;right:14px;top:118px;height:1px;background:var(--line-2)}
+.device .cap{position:absolute;left:26px;right:26px;top:16px;height:70px;border-radius:32px;
+  background:linear-gradient(120deg,#3a3f4c,#22262f);border:1px solid rgba(199,205,214,.2)}
+.device .tip-ring{
+  position:absolute;left:50%;top:34px;transform:translateX(-50%);width:38px;height:38px;border-radius:50%;
+  border:2px solid var(--ember-1);box-shadow:0 0 22px var(--ember-glow),inset 0 0 12px var(--ember-glow);
+  animation:tipPulse 2.6s var(--ease) infinite;
+}
+@keyframes tipPulse{0%,100%{opacity:.7;transform:translateX(-50%) scale(.94)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
+.device .led{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);display:flex;gap:6px}
+.device .led i{width:7px;height:7px;border-radius:50%;background:rgba(199,205,214,.25)}
+.device .led i.on{background:var(--ember-2);box-shadow:0 0 10px var(--ember-2)}
+.device .grip{position:absolute;left:20px;right:20px;bottom:78px;height:66px;border-radius:18px;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.05) 0 2px,transparent 2px 9px)}
+
+.spec-pins{position:absolute;inset:0;pointer-events:none}
+.pin{position:absolute;display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;color:var(--ink-mid);opacity:0;animation:pinIn .8s var(--ease) forwards}
+.pin .dot{width:6px;height:6px;border-radius:50%;background:var(--ice);box-shadow:0 0 10px var(--ice-glow)}
+.pin .rule{width:40px;height:1px;background:var(--line-2)}
+.pin.p1{top:20%;left:63%;animation-delay:.6s}
+.pin.p2{top:47%;left:66%;animation-delay:.9s}
+.pin.p3{top:72%;left:60%;animation-delay:1.2s}
+@keyframes pinIn{to{opacity:1;transform:translateX(6px)}}
+
+/* ============================================================
+   CANVAS SECTIONS
+   ============================================================ */
+.section{padding:var(--sp-6) clamp(20px,4vw,52px);position:relative;scroll-margin-top:80px}
+.section-head{max-width:640px;margin-bottom:var(--sp-5)}
+.section-head h2{font-family:var(--font-display);font-weight:600;font-size:clamp(28px,3.6vw,46px);letter-spacing:-.02em;margin:14px 0 14px}
+.section-head p{color:var(--ink-mid);font-size:16px}
+.reveal{opacity:0;transform:translateY(26px);transition:.9s var(--ease-out)}
+.reveal.in{opacity:1;transform:none}
+
+/* category grid */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3)}
+.cat-card{
+  position:relative;background:linear-gradient(180deg,var(--carbon-2),var(--carbon));
+  border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 24px 24px;overflow:hidden;
+  transition:.5s var(--ease);
+}
+.cat-card::before{content:"";position:absolute;inset:0;background:radial-gradient(340px 200px at 50% -20%,rgba(255,120,70,.14),transparent 70%);opacity:0;transition:.5s}
+.cat-card:hover{transform:translateY(-6px);border-color:var(--line-2)}
+.cat-card:hover::before{opacity:1}
+.cat-card .num{font-family:var(--font-mono);font-size:11px;color:var(--ink-lo);letter-spacing:.2em}
+.cat-card h3{font-family:var(--font-display);font-size:23px;font-weight:600;margin:10px 0 4px}
+.cat-card .kind{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice);margin-bottom:16px}
+.cat-card p{font-size:14px;color:var(--ink-mid);min-height:66px}
+.cat-visual{height:120px;display:grid;place-items:center;margin:6px 0 14px}
+.cat-card .ask{margin-top:8px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;color:var(--ember-2);display:inline-flex;gap:7px;align-items:center;opacity:.9}
+.cat-card:hover .ask{color:var(--ember-1)}
+
+/* mini device glyphs */
+.glyph{position:relative}
+.glyph.one{width:34px;height:96px;border-radius:16px;background:linear-gradient(120deg,#2b2f3a,#14171e);border:1px solid var(--line-2);box-shadow:inset 0 2px 0 rgba(255,255,255,.1)}
+.glyph.one::after{content:"";position:absolute;left:50%;top:12px;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;border:2px solid var(--ember-1);box-shadow:0 0 12px var(--ember-glow)}
+.glyph.air{width:22px;height:104px;border-radius:12px;background:linear-gradient(120deg,#2b2f3a,#14171e);border:1px solid var(--line-2)}
+.glyph.air::after{content:"";position:absolute;left:50%;top:10px;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:var(--ice);box-shadow:0 0 12px var(--ice-glow)}
+.glyph.pearl{width:64px;height:64px}
+.glyph.pearl i{position:absolute;width:20px;height:20px;border-radius:50% 50% 50% 4px;background:linear-gradient(135deg,#e9edf3,#aab3c2);box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.glyph.pearl i:nth-child(1){top:2px;left:6px;transform:rotate(-12deg)}
+.glyph.pearl i:nth-child(2){top:20px;left:30px;transform:rotate(20deg)}
+.glyph.pearl i:nth-child(3){top:34px;left:12px;transform:rotate(-4deg)}
+
+/* trial + upgrade section blocks */
+.feature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3);margin-top:var(--sp-4)}
+.feature{background:var(--carbon);border:1px solid var(--line);border-radius:var(--r-md);padding:22px}
+.feature .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(124,231,216,.1);border:1px solid rgba(124,231,216,.22);margin-bottom:14px}
+.feature h4{font-family:var(--font-display);font-size:16px;font-weight:600;margin-bottom:6px}
+.feature p{font-size:13.5px;color:var(--ink-mid)}
+.section-cta{margin-top:var(--sp-4);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.hint-chip{font-family:var(--font-mono);font-size:11px;color:var(--ink-mid);border:1px dashed var(--line-2);border-radius:999px;padding:9px 15px;transition:.3s}
+.hint-chip:hover{border-color:var(--ember-1);color:var(--ember-2)}
+
+/* upgrade band */
+.upgrade-band{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);align-items:center;
+  background:linear-gradient(120deg,rgba(255,120,70,.08),rgba(124,231,216,.05));
+  border:1px solid var(--line-2);border-radius:var(--r-lg);padding:var(--sp-4)}
+.upgrade-band .owned{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ice);
+  display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(124,231,216,.25);padding:6px 12px;border-radius:999px;margin-bottom:16px}
+
+.footer{padding:var(--sp-5) clamp(20px,4vw,52px);border-top:1px solid var(--line);color:var(--ink-lo);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer .disc{max-width:60ch;font-family:var(--font-mono);font-size:10px;line-height:1.7}
+
+/* ============================================================
+   CONCIERGE DOCK
+   ============================================================ */
+.dock{
+  position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,var(--void-2),#0b0d12);
+  border-left:1px solid var(--line);
+}
+.dock-head{padding:20px 22px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:center}
+.dock-head .meta{min-width:0}
+.dock-head .title{font-family:var(--font-display);font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
+.dock-head .status{font-family:var(--font-mono);font-size:10.5px;color:var(--ice);letter-spacing:.08em;margin-top:2px;transition:.3s;height:14px}
+.dock-head .status.warm{color:var(--ember-2)}
+
+/* ---- HEAT RING avatar (the signature) ---- */
+.ring{position:relative;width:46px;height:46px;flex:none}
+.ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring .core{position:absolute;inset:11px;border-radius:50%;background:var(--grad-heat);opacity:.85;
+  box-shadow:0 0 16px var(--ember-glow);transition:.4s var(--ease)}
+.ring .track{stroke:rgba(199,205,214,.14);stroke-width:2.5;fill:none}
+.ring .prog{stroke:url(#heatgrad);stroke-width:2.5;fill:none;stroke-linecap:round;
+  stroke-dasharray:126;stroke-dashoffset:126;transition:stroke-dashoffset .5s var(--ease)}
+/* states */
+.ring.idle .core{animation:coreBreath 4s var(--ease) infinite}
+@keyframes coreBreath{0%,100%{transform:scale(.9);opacity:.7}50%{transform:scale(1);opacity:.95}}
+.ring.thinking .prog{stroke-dashoffset:40;animation:spin 1.1s linear infinite}
+.ring.thinking .core{background:var(--grad-heat);animation:thinkPulse 1s var(--ease) infinite}
+@keyframes thinkPulse{0%,100%{transform:scale(.86);box-shadow:0 0 10px var(--ember-glow)}50%{transform:scale(1.06);box-shadow:0 0 26px var(--ember-glow)}}
+.ring.generating .prog{stroke-dasharray:10 8;stroke-dashoffset:0;animation:spin .7s linear infinite}
+.ring.generating .core{background:conic-gradient(var(--ember-1),var(--ember-2),var(--ice),var(--ember-1));animation:spin 2.4s linear infinite}
+.ring.listening .core{background:var(--grad-cool);animation:listen 1s var(--ease) infinite}
+.ring.listening .prog{stroke:url(#coolgrad);stroke-dashoffset:20}
+@keyframes listen{0%,100%{transform:scale(.85)}50%{transform:scale(1.12)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ring svg.spinlayer{animation:none}
+.ring.thinking svg,.ring.generating svg{animation:spin 3s linear infinite}
+
+/* messages */
+.stream{flex:1;overflow-y:auto;padding:20px 20px 8px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.stream::-webkit-scrollbar{width:6px}
+.stream::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:3px}
+
+.msg{display:flex;gap:10px;max-width:100%;animation:msgIn .5s var(--ease-out) both}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.msg .av{width:26px;height:26px;border-radius:8px;flex:none;background:var(--grad-heat);display:grid;place-items:center;font-size:12px;color:#160c05;font-weight:700;box-shadow:0 0 12px var(--ember-glow)}
+.msg.user{flex-direction:row-reverse}
+.msg.user .av{background:var(--carbon-2);border:1px solid var(--line-2);color:var(--ink-mid);box-shadow:none}
+.bubble{padding:12px 15px;border-radius:14px;font-size:14px;line-height:1.55;max-width:270px}
+.msg.bot .bubble{background:var(--carbon);border:1px solid var(--line);border-top-left-radius:4px}
+.msg.user .bubble{background:linear-gradient(135deg,rgba(255,120,70,.16),rgba(255,120,70,.06));border:1px solid rgba(255,120,70,.24);border-top-right-radius:4px}
+.bubble b{color:var(--ember-2);font-weight:600}
+.bubble .mn{color:var(--ice);font-family:var(--font-mono);font-size:13px}
+
+/* thinking shimmer bubble */
+.thinking-b{display:flex;align-items:center;gap:10px;padding:12px 15px;background:var(--carbon);border:1px solid var(--line);border-radius:14px;border-top-left-radius:4px}
+.thinking-b .txt{font-family:var(--font-mono);font-size:12px;color:var(--ink-mid);
+  background:linear-gradient(90deg,var(--ink-lo),var(--ember-2),var(--ink-lo));background-size:200% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 1.6s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.dots i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--ember-2);margin-right:3px;animation:dot 1.2s var(--ease) infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+
+/* ---- GENERATIVE UI CARDS ---- */
+.gen{background:linear-gradient(180deg,var(--carbon-2),var(--carbon));border:1px solid var(--line-2);border-radius:16px;overflow:hidden;max-width:300px;box-shadow:var(--shadow)}
+.gen .gen-top{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-lo)}
+.gen .gen-top .live{width:6px;height:6px;border-radius:50%;background:var(--ice);box-shadow:0 0 8px var(--ice-glow);animation:coreBreath 2s infinite}
+.gen .gen-body{padding:16px 15px}
+.gen h5{font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:4px}
+.gen .sub{font-size:12.5px;color:var(--ink-mid);margin-bottom:14px}
+
+/* quiz card */
+.quiz-opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:center;gap:12px;padding:12px 13px;border:1px solid var(--line-2);border-radius:12px;transition:.28s var(--ease);text-align:left;width:100%}
+.opt:hover{border-color:var(--ember-1);background:rgba(255,120,70,.06);transform:translateX(3px)}
+.opt .oic{width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;background:var(--carbon-2);border:1px solid var(--line)}
+.opt .ot{font-size:13.5px;font-weight:500}
+.opt .os{font-size:11px;color:var(--ink-lo)}
+.opt .arw{margin-left:auto;color:var(--ink-lo);transition:.28s}
+.opt:hover .arw{color:var(--ember-1);transform:translateX(3px)}
+.opt:disabled{opacity:.4;pointer-events:none}
+.opt.picked{border-color:var(--ember-1);background:rgba(255,120,70,.1)}
+
+/* progress */
+.qprog{display:flex;gap:5px;margin-bottom:14px}
+.qprog i{height:3px;border-radius:2px;flex:1;background:var(--line-2)}
+.qprog i.done{background:var(--grad-heat)}
+
+/* compare card */
+.cmp{display:flex;flex-direction:column;gap:10px}
+.cmp .row{display:flex;align-items:center;gap:12px;padding:11px;border:1px solid var(--line);border-radius:12px;opacity:0;transform:translateY(12px)}
+.cmp .row.in{opacity:1;transform:none;transition:.6s var(--ease-out)}
+.cmp .row .mg{width:26px;height:44px;flex:none;display:grid;place-items:center}
+.cmp .row .info{min-width:0;flex:1}
+.cmp .row .nm{font-family:var(--font-display);font-size:14px;font-weight:600}
+.cmp .row .tp{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ice)}
+.cmp .row .val{text-align:right;font-family:var(--font-mono);font-size:11px;color:var(--ink-mid)}
+.cmp .row .val b{color:var(--ember-2);font-size:15px;display:block}
+
+/* result card */
+.result{position:relative}
+.result .hero-mini{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.result .badge{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#160c05;background:var(--grad-heat);padding:4px 9px;border-radius:6px;display:inline-block;margin-bottom:8px}
+.result .specs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.result .specs .s{background:var(--void-2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.result .specs .s .v{font-family:var(--font-display);font-size:19px;font-weight:600;color:var(--ink-hi)}
+.result .specs .s .v small{font-size:11px;color:var(--ember-2)}
+.result .specs .s .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-lo)}
+.gen .gen-btn{width:100%;margin-top:6px;background:var(--grad-heat);color:#160c05;font-weight:700;font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:12px;border-radius:11px;transition:.3s}
+.gen .gen-btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px -8px var(--ember-glow)}
+.gen .gen-btn.cool{background:var(--grad-cool);color:#04201c}
+
+/* heat diagram */
+.heatdiag{display:flex;flex-direction:column;gap:12px}
+.blade{position:relative;height:56px;border-radius:10px;background:var(--void-2);border:1px solid var(--line);overflow:hidden;display:grid;place-items:center}
+.blade .b{width:70%;height:8px;border-radius:4px;background:linear-gradient(90deg,#333,#555)}
+.blade .heatwave{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,120,70,.5),transparent);width:40%;animation:sweep 2.2s var(--ease) infinite}
+@keyframes sweep{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+.heatdiag .temp{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;color:var(--ink-mid)}
+.heatdiag .temp b{color:var(--ember-2)}
+
+/* trial card */
+.trial-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.slot{padding:10px 6px;border:1px solid var(--line-2);border-radius:10px;text-align:center;transition:.25s}
+.slot:hover{border-color:var(--ice);background:rgba(124,231,216,.06)}
+.slot.picked{border-color:var(--ice);background:rgba(124,231,216,.12)}
+.slot .d{font-family:var(--font-display);font-size:16px;font-weight:600}
+.slot .m{font-family:var(--font-mono);font-size:9px;color:var(--ink-lo);text-transform:uppercase;letter-spacing:.1em}
+.trial-success{text-align:center;padding:8px 4px}
+.trial-success .chk{width:48px;height:48px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;background:var(--grad-cool);color:#04201c;box-shadow:0 0 24px var(--ice-glow);animation:pop .5s var(--ease-out)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+
+/* upgrade delta card */
+.delta{display:flex;flex-direction:column;gap:9px;margin:12px 0}
+.delta .d{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--void-2);border:1px solid var(--line);border-radius:10px}
+.delta .d .k{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-lo)}
+.delta .d .cmp2{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600}
+.delta .d .old{color:var(--ink-lo);font-size:13px;text-decoration:line-through;text-decoration-color:var(--ink-lo)}
+.delta .d .new{color:var(--ice);font-size:16px}
+.delta .d .up{font-family:var(--font-mono);font-size:9px;color:#160c05;background:var(--ice);padding:2px 6px;border-radius:5px}
+
+/* composer */
+.composer{padding:12px 16px 16px;border-top:1px solid var(--line)}
+.suggests{display:flex;gap:7px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.suggests::-webkit-scrollbar{display:none}
+.sug{flex:none;font-family:var(--font-mono);font-size:11px;letter-spacing:.02em;color:var(--ember-2);
+  border:1px solid rgba(255,120,70,.28);background:rgba(255,120,70,.06);border-radius:999px;padding:8px 13px;transition:.25s;white-space:nowrap;animation:msgIn .4s var(--ease-out) both}
+.sug:hover{background:rgba(255,120,70,.14);transform:translateY(-1px)}
+.sug.cool{color:var(--ice);border-color:rgba(124,231,216,.3);background:rgba(124,231,216,.06)}
+.sug.cool:hover{background:rgba(124,231,216,.14)}
+.input-row{display:flex;gap:9px;align-items:center;background:var(--carbon);border:1px solid var(--line-2);border-radius:14px;padding:6px 6px 6px 15px;transition:.3s}
+.input-row:focus-within{border-color:var(--ember-1);box-shadow:0 0 0 3px rgba(255,120,70,.1)}
+.input-row input{flex:1;background:none;border:none;outline:none;color:var(--ink-hi);font-size:14px;font-family:var(--font-body)}
+.input-row input::placeholder{color:var(--ink-lo)}
+.mic,.send{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;transition:.25s}
+.mic{color:var(--ink-mid)}.mic:hover{color:var(--ice);background:rgba(124,231,216,.08)}
+.mic.rec{color:var(--ice);background:rgba(124,231,216,.12);animation:coreBreath 1s infinite}
+.send{background:var(--grad-heat);color:#160c05}
+.send:hover{transform:scale(1.05)}
+
+/* proactive nudge tag */
+.nudge{position:absolute;top:-9px;right:16px;font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:#160c05;background:var(--grad-heat);padding:3px 9px;border-radius:6px;opacity:0;transform:translateY(-4px);transition:.4s;pointer-events:none}
+.nudge.show{opacity:1;transform:none}
+
+/* mobile dock toggle */
+.dock-fab{display:none}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:1100px){
+  :root{--dock-w:340px}
+  .hero-grid{grid-template-columns:1fr}
+  .device-stage{min-height:340px;order:-1}
+  .cat-grid,.feature-row{grid-template-columns:1fr}
+  .upgrade-band{grid-template-columns:1fr}
+}
+@media(max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .dock-col{position:fixed;inset:auto 0 0 0;z-index:60;transform:translateY(100%);transition:.5s var(--ease);height:82vh}
+  .dock-col.open{transform:none}
+  .dock{position:relative;height:82vh;border-left:none;border-top:1px solid var(--line-2);border-radius:22px 22px 0 0}
+  .dock-fab{display:flex;position:fixed;right:18px;bottom:18px;z-index:55;align-items:center;gap:10px;
+    padding:12px 18px 12px 12px;border-radius:999px;background:var(--carbon);border:1px solid var(--line-2);box-shadow:var(--shadow)}
+  .dock-fab .lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em}
+  .cat-grid{grid-template-columns:1fr}
+  .journeys{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ AGE GATE ============ -->
+<div id="ageGate" style="position:fixed;inset:0;z-index:100;background:rgba(6,7,10,.94);backdrop-filter:blur(14px);display:grid;place-items:center;padding:24px">
+  <div style="max-width:420px;text-align:center;background:var(--carbon);border:1px solid var(--line-2);border-radius:24px;padding:40px 32px;box-shadow:var(--shadow)">
+    <div class="ring idle" style="margin:0 auto 20px">
+      <svg viewBox="0 0 46 46"><defs>
+        <linearGradient id="heatgrad0"><stop offset="0" stop-color="#FFB454"/><stop offset="1" stop-color="#FF6A3D"/></linearGradient></defs>
+        <circle class="track" cx="23" cy="23" r="20"/></svg>
+      <div class="core"></div>
+    </div>
+    <div class="eyebrow" style="margin-bottom:10px">KELVIN · Design Concept</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;font-weight:600;margin-bottom:12px">Are you 21 or older?</h2>
+    <p style="color:var(--ink-mid);font-size:14px;margin-bottom:24px">This is a fictional product demo intended for adult audiences. KELVIN is not a real brand and no product is for sale.</p>
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="document.getElementById('ageGate').style.display='none'">Yes, I'm 21+</button>
+      <a class="btn btn-ghost" style="flex:1;justify-content:center" href="https://www.google.com">Exit</a>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <!-- ============ CANVAS ============ -->
+  <main class="canvas">
+    <header class="topbar">
+      <div class="brand"><span class="k-mark">K</span><div>KELVIN<small>PRECISION HEAT</small></div></div>
+      <nav class="journeys" id="journeys">
+        <button data-jump="learn" class="active"><span class="idx">01</span>Learn</button>
+        <button data-jump="trial"><span class="idx">02</span>Try</button>
+        <button data-jump="upgrade"><span class="idx">03</span>Upgrade</button>
+      </nav>
+      <span class="age">21+</span>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="top" data-section="hero">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Heat, not burn · Ceramic blade v3</span>
+          <h1>The device that <span class="warm">knows the ritual</span>, not just the heat.</h1>
+          <p class="lead">Three ways into the KELVIN world — a handheld, a lighter companion, and a device-free option. Not sure where to begin? The concierge on the right adapts to whatever you're looking at.</p>
+          <div class="hero-cta">
+            <button class="btn btn-primary" data-ask="Help me choose the right KELVIN">Help me choose ↗</button>
+            <button class="btn btn-ghost" data-jump="learn">Explore the family</button>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><div class="n" data-count="350"><small>°C</small></div><div class="l">Precise heat</div></div>
+            <div class="stat"><div class="n" data-count="14"><small>day</small></div><div class="l">Home trial</div></div>
+            <div class="stat"><div class="n" data-count="3"></div><div class="l">Ways in</div></div>
+          </div>
+        </div>
+        <div class="device-stage">
+          <div class="device-halo"></div>
+          <div class="device">
+            <div class="body"></div><div class="cap"></div><div class="tip-ring"></div>
+            <div class="seam"></div><div class="grip"></div>
+            <div class="led"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+          </div>
+          <div class="spec-pins">
+            <div class="pin p1"><span class="dot"></span><span class="rule"></span>Ceramic blade</div>
+            <div class="pin p2"><span class="dot"></span><span class="rule"></span>Haptic ready-cue</div>
+            <div class="pin p3"><span class="dot"></span><span class="rule"></span>USB-C · 20 uses</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEARN -->
+    <section class="section" id="learn" data-section="learn">
+      <div class="section-head reveal">
+        <span class="eyebrow">Journey 01 · Category education</span>
+        <h2>Three forms. One philosophy of heat.</h2>
+        <p>Tap any card and the concierge will unpack it — or just ask “which one fits me?” and watch it build a recommendation live.</p>
+      </div>
+      <div class="cat-grid">
+        <div class="cat-card reveal" data-ask="Tell me about KELVIN One">
+          <div class="cat-visual"><div class="glyph one"></div></div>
+          <div class="num">CATEGORY 01</div>
+          <h3>KELVIN One</h3>
+          <div class="kind">Handheld · Heated</div>
+          <p>The full ritual. A ceramic blade heats a real stick to 350°C — rich, deliberate, unmistakably tactile.</p>
+          <span class="ask">Ask the concierge →</span>
+        </div>
+        <div class="cat-card reveal" data-ask="Tell me about KELVIN Air">
+          <div class="cat-visual"><div class="glyph air"></div></div>
+          <div class="num">CATEGORY 02</div>
+          <h3>KELVIN Air</h3>
+          <div class="kind">Slim · Liquid</div>
+          <p>Leaner, lighter, liquid-driven. A pocket companion for people who want discretion over ceremony.</p>
+          <span class="ask">Ask the concierge →</span>
+        </div>
+        <div class="cat-card reveal" data-ask="Tell me about KELVIN Pearl">
+          <div class="cat-visual"><div class="glyph pearl"><i></i><i></i><i></i></div></div>
+          <div class="num">CATEGORY 03</div>
+          <h3>KELVIN Pearl</h3>
+          <div class="kind">Device-free · Manual</div>
+          <p>No charging, no heat, no device. A small pearl you hold — the simplest possible way in.</p>
+          <span class="ask">Ask the concierge →</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRIAL -->
+    <section class="section" id="trial" data-section="trial">
+      <div class="section-head reveal">
+        <span class="eyebrow">Journey 02 · Guided trial</span>
+        <h2>Live with it for 14 days before you decide.</h2>
+        <p>No showroom pressure. The concierge can book a home trial, match a nearby test bar, or ship a starter kit — just say the word.</p>
+      </div>
+      <div class="feature-row">
+        <div class="feature reveal"><div class="ic">🏠</div><h4>14-day home trial</h4><p>Full device, delivered. Keep it or return it — the concierge handles the pickup.</p></div>
+        <div class="feature reveal"><div class="ic">📍</div><h4>Test bars near you</h4><p>Find a KELVIN counter and try every category in person, guided step by step.</p></div>
+        <div class="feature reveal"><div class="ic">✨</div><h4>Personal setup</h4><p>The concierge remembers your category pick and pre-configures your first session.</p></div>
+      </div>
+      <div class="section-cta reveal">
+        <button class="btn btn-primary" data-ask="Book a 14-day home trial">Book my trial ↗</button>
+        <button class="hint-chip" data-ask="Where can I test one near me?">Find a test bar</button>
+      </div>
+    </section>
+
+    <!-- UPGRADE -->
+    <section class="section" id="upgrade" data-section="upgrade">
+      <div class="section-head reveal">
+        <span class="eyebrow">Journey 03 · Upgrade</span>
+        <h2>You own the One. Meet the One² (2026).</h2>
+      </div>
+      <div class="upgrade-band reveal">
+        <div>
+          <span class="owned"><span style="width:6px;height:6px;border-radius:50%;background:var(--ice);display:inline-block"></span>Recognised: KELVIN One · owned 14 months</span>
+          <h3 style="font-family:var(--font-display);font-size:26px;font-weight:600;margin-bottom:10px">Twice the sessions. Half the wait.</h3>
+          <p style="color:var(--ink-mid);font-size:15px">The 2026 blade heats in 15 seconds and runs 40 uses per charge. Ask the concierge to compare it against your current device — it already knows what you have.</p>
+          <div class="section-cta">
+            <button class="btn btn-primary" data-ask="Should I upgrade to the One² 2026?">Compare with my device ↗</button>
+          </div>
+        </div>
+        <div class="device-stage" style="min-height:280px">
+          <div class="device-halo" style="width:300px;height:300px"></div>
+          <div class="device" style="transform:rotate(10deg);animation:none">
+            <div class="body" style="background:linear-gradient(120deg,#3a2620,#1a120f 50%,#0f0a08)"></div>
+            <div class="cap"></div>
+            <div class="tip-ring" style="border-color:var(--ice);box-shadow:0 0 22px var(--ice-glow),inset 0 0 12px var(--ice-glow)"></div>
+            <div class="seam"></div><div class="grip"></div>
+            <div class="led"><i class="on" style="background:var(--ice);box-shadow:0 0 10px var(--ice)"></i><i class="on" style="background:var(--ice);box-shadow:0 0 10px var(--ice)"></i><i class="on" style="background:var(--ice);box-shadow:0 0 10px var(--ice)"></i><i class="on" style="background:var(--ice);box-shadow:0 0 10px var(--ice)"></i></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>© 2026 KELVIN <span style="color:var(--ink-lo)">(fictional)</span> · A GenUI concierge concept</div>
+      <div class="disc">FICTIONAL DESIGN DEMO · NOT A REAL PRODUCT · FOR ADULTS 21+ · No product is for sale and no health, safety, or reduced-risk claims are made. Built to showcase generative, context-aware chat UI.</div>
+    </footer>
+  </main>
+
+  <!-- ============ CONCIERGE DOCK ============ -->
+  <div class="dock-col" id="dockCol">
+    <aside class="dock">
+      <div class="nudge" id="nudge">New idea ↓</div>
+      <div class="dock-head">
+        <div class="ring idle" id="ring">
+          <svg viewBox="0 0 46 46">
+            <defs>
+              <linearGradient id="heatgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB454"/><stop offset="1" stop-color="#FF6A3D"/></linearGradient>
+              <linearGradient id="coolgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7CE7D8"/><stop offset="1" stop-color="#6FB8FF"/></linearGradient>
+            </defs>
+            <circle class="track" cx="23" cy="23" r="20"/>
+            <circle class="prog" cx="23" cy="23" r="20"/>
+          </svg>
+          <div class="core"></div>
+        </div>
+        <div class="meta">
+          <div class="title">KELVIN Concierge</div>
+          <div class="status" id="status">Ready · watching the page</div>
+        </div>
+      </div>
+
+      <div class="stream" id="stream"></div>
+
+      <div class="composer">
+        <div class="suggests" id="suggests"></div>
+        <div class="input-row">
+          <input id="input" placeholder="Ask anything about KELVIN…" autocomplete="off" />
+          <button class="mic" id="mic" title="Voice">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10a7 7 0 0 1-14 0M12 17v4"/></svg>
+          </button>
+          <button class="send" id="send" title="Send">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<button class="dock-fab" id="fab" onclick="document.getElementById('dockCol').classList.toggle('open')">
+  <div class="ring idle" style="width:34px;height:34px"><svg viewBox="0 0 46 46"><circle class="track" cx="23" cy="23" r="20"/></svg><div class="core"></div></div>
+  <span class="lbl">Ask KELVIN</span>
+</button>
+
+<script>
+/* ============================================================
+   KELVIN Concierge — scripted GenUI engine
+   ============================================================ */
+const stream  = document.getElementById('stream');
+const statusEl= document.getElementById('status');
+const ring    = document.getElementById('ring');
+const suggests= document.getElementById('suggests');
+const input   = document.getElementById('input');
+const nudge   = document.getElementById('nudge');
+
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+function setState(s, label){
+  ring.className = 'ring ' + s;
+  if(label){ statusEl.textContent = label; statusEl.classList.toggle('warm', s==='thinking'||s==='generating'); }
+}
+function scrollDock(){ stream.scrollTop = stream.scrollHeight; }
+
+/* ---- message primitives ---- */
+function userMsg(text){
+  const el=document.createElement('div');
+  el.className='msg user';
+  el.innerHTML=`<div class="av">You</div><div class="bubble">${text}</div>`;
+  stream.appendChild(el); scrollDock();
+}
+function botMsg(html){
+  const el=document.createElement('div');
+  el.className='msg bot';
+  el.innerHTML=`<div class="av">K</div><div class="bubble">${html}</div>`;
+  stream.appendChild(el); scrollDock(); return el;
+}
+async function thinking(text='Thinking'){
+  setState('thinking','Thinking…');
+  const el=document.createElement('div');
+  el.className='msg bot';
+  el.innerHTML=`<div class="av">K</div><div class="thinking-b"><span class="dots"><i></i><i></i><i></i></span><span class="txt">${text}…</span></div>`;
+  stream.appendChild(el); scrollDock();
+  return el;
+}
+/* attach a generative UI card as a bot message */
+function genCard(innerHTML){
+  const el=document.createElement('div');
+  el.className='msg bot';
+  el.innerHTML=`<div class="av">K</div>`;
+  const card=document.createElement('div');
+  card.className='gen';
+  card.innerHTML=innerHTML;
+  el.appendChild(card);
+  stream.appendChild(el); scrollDock();
+  return card;
+}
+
+/* ============================================================
+   GENERATIVE UI FACTORIES
+   ============================================================ */
+const DEVICES = {
+  one:  {name:'KELVIN One',  type:'Handheld · Heated',   glyph:'one',  heat:350, uses:20, warm:'25s', why:'the full, tactile ritual'},
+  air:  {name:'KELVIN Air',  type:'Slim · Liquid',       glyph:'air',  heat:0,   uses:600,warm:'instant', why:'discretion and a featherweight carry'},
+  pearl:{name:'KELVIN Pearl',type:'Device-free · Manual', glyph:'pearl',heat:0,   uses:0,  warm:'none',   why:'zero setup — nothing to charge or heat'}
+};
+function glyphHTML(k){ return k==='pearl' ? `<div class="glyph pearl"><i></i><i></i><i></i></div>` : `<div class="glyph ${k}" style="transform:scale(.5)"></div>`; }
+
+/* --- category detail (single device) --- */
+async function genDeviceDetail(key){
+  const d=DEVICES[key];
+  const card=genCard(`<div class="gen-top"><span class="live"></span>Generating · device card</div><div class="gen-body" id="dc"><div style="height:120px;display:grid;place-items:center"><span class="mono" style="font-size:11px;color:var(--ink-lo)">assembling…</span></div></div>`);
+  await wait(650);
+  card.querySelector('.gen-body').innerHTML=`
+    <div class="result">
+      <div class="hero-mini"><div style="width:44px;height:70px;display:grid;place-items:center">${glyphHTML(d.glyph)}</div>
+        <div><span class="badge">Category</span><h5>${d.name}</h5><div class="sub" style="margin:0">${d.type}</div></div></div>
+      <div class="specs">
+        <div class="s"><div class="v" data-c="${d.heat}">${d.heat?'0':'—'}<small>${d.heat?'°C':''}</small></div><div class="k">Peak heat</div></div>
+        <div class="s"><div class="v" data-c="${d.uses}">${d.uses?'0':'—'}</div><div class="k">${key==='air'?'Puffs/pod':key==='pearl'?'Device-free':'Uses/charge'}</div></div>
+      </div>
+      <p class="sub" style="margin-bottom:12px">Best for ${d.why}. Warm-up: <b style="color:var(--ember-2)">${d.warm}</b>.</p>
+      <button class="gen-btn ${key==='pearl'?'':''}" data-ask="Book a 14-day home trial">Try ${d.name} for 14 days</button>
+    </div>`;
+  countUp(card); scrollDock();
+}
+
+/* --- compare all three --- */
+async function genCompare(){
+  const card=genCard(`<div class="gen-top"><span class="live"></span>Generating · comparison</div><div class="gen-body"><h5>The KELVIN family</h5><div class="sub">Same philosophy, three commitments.</div><div class="cmp" id="cmp"></div></div>`);
+  const wrap=card.querySelector('#cmp');
+  const order=['one','air','pearl'];
+  const vals={one:'350°C',air:'Liquid',pearl:'Manual'};
+  for(let i=0;i<order.length;i++){
+    const d=DEVICES[order[i]];
+    const row=document.createElement('div');
+    row.className='row';
+    row.innerHTML=`<div class="mg">${glyphHTML(d.glyph)}</div>
+      <div class="info"><div class="nm">${d.name}</div><div class="tp">${d.type}</div></div>
+      <div class="val"><b>${vals[order[i]]}</b>${d.warm} warm</div>`;
+    row.setAttribute('data-ask','Tell me about '+d.name);
+    wrap.appendChild(row);
+    await wait(230);
+    row.classList.add('in');
+    scrollDock();
+  }
+  await wait(250);
+  const foot=document.createElement('button');
+  foot.className='gen-btn';foot.style.marginTop='12px';
+  foot.setAttribute('data-ask','Help me choose the right KELVIN');
+  foot.textContent='Not sure? Help me choose';
+  card.querySelector('.gen-body').appendChild(foot);
+  scrollDock();
+}
+
+/* --- heat-not-burn diagram --- */
+async function genHeat(){
+  const card=genCard(`<div class="gen-top"><span class="live"></span>Generating · how it works</div><div class="gen-body">
+    <h5>Heat, not burn</h5><div class="sub">A ceramic blade warms the stick — it never reaches combustion.</div>
+    <div class="heatdiag"><div class="blade"><div class="b"></div><div class="heatwave"></div></div>
+    <div class="temp"><span>Combustion <b style="color:var(--ink-lo)">~900°C</b></span><span>KELVIN <b>350°C</b></span></div></div>
+    <button class="gen-btn cool" data-ask="Which one fits me?" style="margin-top:14px">Find my match</button></div>`);
+  scrollDock();
+}
+
+/* --- FIT FINDER quiz (multi-step, generates a result) --- */
+const QUIZ=[
+  {q:'What matters most to you?',opts:[
+    {t:'The full ritual',s:'tactile, deliberate',ic:'🔥',w:{one:2,air:0,pearl:0}},
+    {t:'Discreet & light',s:'pocket-friendly',ic:'🪶',w:{one:0,air:2,pearl:1}},
+    {t:'Zero fuss',s:'nothing to charge',ic:'○',w:{one:0,air:0,pearl:2}} ]},
+  {q:'And your ideal moment?',opts:[
+    {t:'A slow evening',s:'time to enjoy it',ic:'🌙',w:{one:2,air:0,pearl:0}},
+    {t:'On the move',s:'quick, between things',ic:'⚡',w:{one:0,air:2,pearl:1}},
+    {t:'Totally spontaneous',s:'no thinking',ic:'✦',w:{one:0,air:1,pearl:2}} ]}
+];
+async function genQuiz(){
+  const score={one:0,air:0,pearl:0};
+  let step=0;
+  const card=genCard('');
+  async function renderStep(){
+    const Q=QUIZ[step];
+    card.innerHTML=`<div class="gen-top"><span class="live"></span>Fit finder · ${step+1} of ${QUIZ.length}</div>
+      <div class="gen-body"><div class="qprog">${QUIZ.map((_,i)=>`<i class="${i<=step?'done':''}"></i>`).join('')}</div>
+      <h5>${Q.q}</h5><div class="sub">Tap what feels most like you.</div><div class="quiz-opts"></div></div>`;
+    const box=card.querySelector('.quiz-opts');
+    Q.opts.forEach(o=>{
+      const b=document.createElement('button');
+      b.className='opt';
+      b.innerHTML=`<span class="oic">${o.ic}</span><span><span class="ot">${o.t}</span><br><span class="os">${o.s}</span></span><span class="arw">→</span>`;
+      b.onclick=async()=>{
+        [...box.children].forEach(c=>c.disabled=true);
+        b.classList.add('picked');
+        for(const k in o.w) score[k]+=o.w[k];
+        userMsg(o.t);
+        await wait(400);
+        step++;
+        if(step<QUIZ.length){ await renderStep(); }
+        else { card.closest('.msg').remove(); await revealResult(score); }
+      };
+      box.appendChild(b);
+    });
+    scrollDock();
+  }
+  await renderStep();
+}
+async function revealResult(score){
+  const t=await thinking('Matching you to a category');
+  await wait(1150);
+  t.remove();
+  setState('generating','Generating your match…');
+  const best=Object.keys(score).sort((a,b)=>score[b]-score[a])[0];
+  const d=DEVICES[best];
+  const card=genCard(`<div class="gen-top"><span class="live"></span>Your match · generated live</div>
+    <div class="gen-body result">
+      <div class="hero-mini"><div style="width:44px;height:70px;display:grid;place-items:center">${glyphHTML(d.glyph)}</div>
+      <div><span class="badge">96% fit</span><h5>${d.name}</h5><div class="sub" style="margin:0">${d.type}</div></div></div>
+      <p class="sub" style="margin-bottom:12px">Based on your answers, you'll click with ${d.name} — ${d.why}.</p>
+      <div class="specs">
+        <div class="s"><div class="v" data-c="${d.heat||96}">0${d.heat?'<small>°C</small>':'<small>% fit</small>'}</div><div class="k">${d.heat?'Peak heat':'Match score'}</div></div>
+        <div class="s"><div class="v" data-c="14">0<small>days</small></div><div class="k">Try it free</div></div>
+      </div>
+      <button class="gen-btn" data-ask="Book a 14-day home trial">Trial ${d.name} free ↗</button>
+    </div>`);
+  countUp(card);
+  await wait(300);
+  setState('idle','Ready · watching the page');
+  botMsg(`Want me to line up a home trial for the <b>${d.name}</b>, or compare it against the other two first?`);
+}
+
+/* --- TRIAL booking card --- */
+async function genTrial(){
+  const card=genCard(`<div class="gen-top"><span class="live"></span>Generating · trial booking</div>
+    <div class="gen-body"><h5>Book your 14-day home trial</h5><div class="sub">Pick a delivery day — pickup is automatic if you return it.</div>
+    <div class="trial-slots" id="slots"></div>
+    <button class="gen-btn cool" id="confirmTrial" disabled style="opacity:.4">Select a day</button></div>`);
+  const days=[['TUE','16'],['THU','18'],['SAT','20']];
+  const slots=card.querySelector('#slots');
+  let picked=null;
+  days.forEach(([m,dd])=>{
+    const s=document.createElement('button');
+    s.className='slot';s.innerHTML=`<div class="d">${dd}</div><div class="m">${m}</div>`;
+    s.onclick=()=>{[...slots.children].forEach(c=>c.classList.remove('picked'));s.classList.add('picked');picked=`${m} ${dd}`;
+      const btn=card.querySelector('#confirmTrial');btn.disabled=false;btn.style.opacity='1';btn.textContent='Confirm '+picked;};
+    slots.appendChild(s);
+  });
+  card.querySelector('#confirmTrial').onclick=async(e)=>{
+    if(!picked)return;
+    userMsg('Confirm my trial for '+picked);
+    const t=await thinking('Reserving your device');
+    await wait(1000);t.remove();
+    setState('generating','Confirming…');await wait(400);
+    card.querySelector('.gen-body').innerHTML=`<div class="trial-success">
+      <div class="chk"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <h5>You're booked for ${picked}</h5><div class="sub">Your KELVIN arrives charged and pre-configured. I'll check in on day 12.</div></div>`;
+    scrollDock();setState('idle','Ready · watching the page');
+    await wait(400);botMsg(`Booked ✦ Anything you want set up before it lands — flavours, session length, a reminder?`);
+  };
+  scrollDock();
+}
+/* --- find test bar (lighter) --- */
+async function genBars(){
+  botMsg(`Three KELVIN counters are within 3km of you. Want me to <b>hold a guided demo slot</b> at the closest one, or book the home trial instead?`);
+}
+
+/* --- UPGRADE delta card --- */
+async function genUpgrade(){
+  const card=genCard(`<div class="gen-top"><span class="live"></span>Generating · your upgrade delta</div>
+    <div class="gen-body"><h5>One → One² (2026)</h5><div class="sub">Measured against the device you already own.</div>
+    <div class="delta" id="delta"></div>
+    <button class="gen-btn cool" data-ask="Book a 14-day home trial">Trade up — keep One as backup ↗</button></div>`);
+  const rows=[
+    {k:'Warm-up',old:'25s',nw:'15s',up:'−40%'},
+    {k:'Uses / charge',old:'20',nw:'40',up:'2×'},
+    {k:'Blade life',old:'6mo',nw:'12mo',up:'2×'}
+  ];
+  const box=card.querySelector('#delta');
+  for(const r of rows){
+    const el=document.createElement('div');el.className='d';el.style.opacity='0';el.style.transform='translateY(10px)';el.style.transition='.5s var(--ease)';
+    el.innerHTML=`<span class="k">${r.k}</span><span class="cmp2"><span class="old">${r.old}</span><span style="color:var(--ink-lo)">→</span><span class="new">${r.nw}</span><span class="up">${r.up}</span></span>`;
+    box.appendChild(el);
+    await wait(280);requestAnimationFrame(()=>{el.style.opacity='1';el.style.transform='none';});
+    scrollDock();
+  }
+  await wait(300);
+  botMsg(`Because you've been with the One for 14 months, your upgrade includes <b>free trade-in credit</b>. Want the numbers on that?`);
+}
+
+/* count-up util */
+function countUp(scope){
+  scope.querySelectorAll('[data-c]').forEach(el=>{
+    const target=+el.dataset.c; if(!target){return;}
+    const small=el.querySelector('small')?.outerHTML||'';
+    let cur=0;const dur=900,t0=performance.now();
+    (function tick(now){
+      const p=Math.min(1,(now-t0)/dur);const e=1-Math.pow(1-p,3);
+      el.innerHTML=Math.round(target*e)+small;
+      if(p<1)requestAnimationFrame(tick);
+    })(t0);
+  });
+}
+
+/* ============================================================
+   INTENT ROUTER (scripted "AI")
+   ============================================================ */
+async function respond(text){
+  const q=text.toLowerCase();
+  const t=await thinking(pickThought(q));
+  await wait(900+Math.random()*500);
+  t.remove();
+
+  if(/choose|fit|which one|match|help me/.test(q)){
+    botMsg('Love it — two quick taps and I\'ll build your match on the spot.');
+    setState('generating','Generating fit finder…'); await wait(500);
+    await genQuiz(); setState('idle','Ready · watching the page'); return;
+  }
+  if(/compare|family|all three|three|show me/.test(q)){
+    botMsg('Here they are, side by side —'); setState('generating','Composing comparison…'); await wait(500);
+    await genCompare(); setState('idle','Ready · watching the page'); return;
+  }
+  if(/heat|burn|how.*work|what is/.test(q)){
+    botMsg('The whole idea in one picture:'); setState('generating','Rendering diagram…'); await wait(450);
+    await genHeat(); setState('idle','Ready · watching the page'); return;
+  }
+  if(/\bone\b|handheld/.test(q) && !/upgrade|one²|2026/.test(q)){
+    botMsg('The flagship. Building its card —'); setState('generating','Generating…'); await wait(400);
+    await genDeviceDetail('one'); setState('idle','Ready'); return;
+  }
+  if(/\bair\b|slim|liquid/.test(q)){
+    botMsg('The featherweight. One moment —'); setState('generating','Generating…'); await wait(400);
+    await genDeviceDetail('air'); setState('idle','Ready'); return;
+  }
+  if(/pearl|gum|device.free|manual|no device/.test(q)){
+    botMsg('The simplest way in. Here it is —'); setState('generating','Generating…'); await wait(400);
+    await genDeviceDetail('pearl'); setState('idle','Ready'); return;
+  }
+  if(/book|trial|14|home/.test(q)){
+    botMsg('Let\'s get you living with one. Pick a day —'); setState('generating','Building booking…'); await wait(450);
+    await genTrial(); return;
+  }
+  if(/test bar|near me|showroom|where/.test(q)){ await genBars(); setState('idle','Ready'); return; }
+  if(/upgrade|should i|one²|2026|new model|new product|release/.test(q)){
+    botMsg('You\'ve earned a look at this. Comparing against your One —'); setState('generating','Calculating delta…'); await wait(500);
+    await genUpgrade(); setState('idle','Ready · watching the page'); return;
+  }
+  /* fallback */
+  botMsg('I can walk you through the three categories, find your match, book a 14-day trial, or compare an upgrade. What sounds good?');
+  setState('idle','Ready · watching the page');
+}
+function pickThought(q){
+  if(/choose|fit|which/.test(q))return'Reading your preferences';
+  if(/compare|family/.test(q))return'Lining up the family';
+  if(/trial|book/.test(q))return'Checking delivery windows';
+  if(/upgrade/.test(q))return'Pulling your device history';
+  return'Working it out';
+}
+
+/* ---- send handling ---- */
+async function send(text){
+  text=(text||input.value).trim(); if(!text)return;
+  input.value='';
+  userMsg(text);
+  await respond(text);
+}
+document.getElementById('send').onclick=()=>send();
+input.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+
+/* clicking any [data-ask] anywhere sends it */
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-ask]'); if(!a)return;
+  document.getElementById('dockCol').classList.add('open');
+  send(a.getAttribute('data-ask'));
+});
+/* journey jump */
+document.addEventListener('click',e=>{
+  const j=e.target.closest('[data-jump]'); if(!j)return;
+  document.getElementById(j.getAttribute('data-jump')).scrollIntoView({behavior:'smooth'});
+});
+
+/* ============================================================
+   SUGGESTED PROMPTS — context aware per section
+   ============================================================ */
+const SUGGEST={
+  hero:  [['What is heat, not burn?',''],['Show me the family',''],['Help me choose','cool']],
+  learn: [['Which one fits me?',''],['Compare all three',''],['Is there a device-free option?','cool']],
+  trial: [['Book a 14-day home trial',''],['Where can I test one near me?','cool'],['What happens after 14 days?','']],
+  upgrade:[['Should I upgrade to the One² 2026?',''],['What\'s new in the 2026 model?',''],['Do I get trade-in credit?','cool']]
+};
+function renderSuggests(sec){
+  const list=SUGGEST[sec]||SUGGEST.hero;
+  suggests.innerHTML='';
+  list.forEach(([t,cls],i)=>{
+    const b=document.createElement('button');
+    b.className='sug '+cls; b.textContent=t; b.style.animationDelay=(i*.06)+'s';
+    b.onclick=()=>send(t);
+    suggests.appendChild(b);
+  });
+}
+
+/* ============================================================
+   PAGE-AWARE CONCIERGE (reacts to where you are)
+   ============================================================ */
+const SECTION_GREET={
+  learn:'I see you\'re on the categories. Want me to <b>match you to one</b> in two taps?',
+  trial:'Thinking about trying before buying? I can <b>book a 14-day home trial</b> whenever you\'re ready.',
+  upgrade:'You\'re looking at the 2026 model — I can <b>compare it against the One you own</b> right now.'
+};
+const greeted=new Set();
+let current='hero';
+function activate(sec){
+  if(sec===current)return;
+  current=sec;
+  renderSuggests(sec);
+  /* highlight journey tab */
+  document.querySelectorAll('#journeys button').forEach(b=>b.classList.toggle('active',b.dataset.jump===sec));
+  /* proactive nudge — only once per section, only after intro */
+  if(introDone && SECTION_GREET[sec] && !greeted.has(sec)){
+    greeted.add(sec);
+    flashNudge();
+    setTimeout(()=>{ if(current===sec) botMsg(SECTION_GREET[sec]); },700);
+  }
+}
+function flashNudge(){ nudge.classList.add('show'); setTimeout(()=>nudge.classList.remove('show'),2600); }
+
+const obs=new IntersectionObserver(es=>{
+  es.forEach(en=>{ if(en.isIntersecting && en.intersectionRatio>.4) activate(en.target.dataset.section); });
+},{threshold:[.4]});
+document.querySelectorAll('[data-section]').forEach(s=>obs.observe(s));
+
+/* reveal on scroll */
+const rObs=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');rObs.unobserve(en.target);}}),{threshold:.18});
+document.querySelectorAll('.reveal').forEach(el=>rObs.observe(el));
+
+/* hero stat count-up on load */
+window.addEventListener('load',()=>{
+  document.querySelectorAll('.hero-stats [data-count]').forEach(el=>{
+    const target=+el.dataset.count, small=el.querySelector('small')?.outerHTML||'';
+    let t0=performance.now();
+    (function tick(now){const p=Math.min(1,(now-t0)/1100);const e=1-Math.pow(1-p,3);
+      el.innerHTML=Math.round(target*e)+small; if(p<1)requestAnimationFrame(tick);})(t0);
+  });
+});
+
+/* mic — simulated listening */
+const mic=document.getElementById('mic');
+mic.onclick=async()=>{
+  mic.classList.add('rec'); setState('listening','Listening…');
+  input.placeholder='Listening…';
+  await wait(1600);
+  mic.classList.remove('rec'); setState('idle','Ready · watching the page');
+  input.placeholder='Ask anything about KELVIN…';
+  send('Help me choose the right KELVIN');
+};
+
+/* ============================================================
+   INTRO SEQUENCE
+   ============================================================ */
+let introDone=false;
+async function intro(){
+  renderSuggests('hero');
+  await wait(600);
+  botMsg('Hi — I\'m your KELVIN concierge. ✦');
+  await wait(700);
+  botMsg('I\'ll react to whatever you\'re looking at and build things right here in the chat. <b>Ask me anything</b>, or tap a suggestion below.');
+  await wait(400);
+  introDone=true;
+}
+intro();
+</script>
+</body>
+</html>
